@@ -83,7 +83,6 @@ const Navbar = () => {
           <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Recursos</a>
           <a href="#demo" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Demonstração</a>
           <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Preços</a>
-          <Button variant="outline" className="py-2 px-4 text-sm" href="https://painel-de-controle-barbearia.web.app">Entrar</Button>
           <Button variant="primary" className="py-2 px-4 text-sm" href="#pricing">Começar Grátis</Button>
         </div>
 
