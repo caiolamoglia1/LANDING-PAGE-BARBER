@@ -2,17 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, ChevronRight, Star, Calendar, DollarSign, Smartphone, MessageCircle, Menu, X, ArrowRight } from 'lucide-react';
 
-// --- CONFIGURAÇÃO DE LINKS DE PAGAMENTO ---
-// Substitua estes links pelos que você gerar no Stripe/Asaas
-const CHECKOUT_LINKS = {
-  basic: "https://link.asaas.com/c/seu-link-plano-basic", // Exemplo Asaas
-  pro: "https://buy.stripe.com/seu-link-plano-pro",       // Exemplo Stripe
-  whatsapp: "https://wa.me/5541991750402?text=Quero%20tirar%20duvidas%20sobre%20o%20sistema"
+// --- CONFIGURAÇÃO ---
+const WHATSAPP_LINK = "https://wa.me/5541991750402?text=Quero%20tirar%20duvidas%20sobre%20o%20sistema";
+const API_URL = import.meta.env.MODE === 'development' 
+  ? 'http://localhost:3000' 
+  : '';
+
+// Função para criar checkout com parcelamento
+const createCheckoutSession = async (planType) => {
+  try {
+    const response = await fetch(`${API_URL}/api/create-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ planType }),
+    });
+
+    const data = await response.json();
+    
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error('Erro ao criar sessão de pagamento');
+    }
+  } catch (error) {
+    console.error('Erro:', error);
+    alert('Erro ao processar pagamento. Tente novamente ou entre em contato.');
+  }
 };
 
 // --- Componentes UI ---
 
-const Button = ({ children, variant = 'primary', className = '', href = null, ...props }) => {
+const Button = ({ children, variant = 'primary', className = '', href = null, onClick = null, ...props }) => {
   const baseStyle = "px-6 py-3 rounded-lg font-bold transition-all duration-300 transform hover:scale-105 flex items-center gap-2 justify-center";
   const variants = {
     primary: "bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/30",
@@ -36,7 +58,11 @@ const Button = ({ children, variant = 'primary', className = '', href = null, ..
   }
 
   return (
-    <button className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+    <button 
+      className={`${baseStyle} ${variants[variant]} ${className}`} 
+      onClick={onClick}
+      {...props}
+    >
       {children}
     </button>
   );
@@ -137,7 +163,7 @@ const Hero = () => {
             <Button variant="primary" href="#pricing">
               Ver Planos <ChevronRight size={18} />
             </Button>
-            <Button variant="secondary" href={CHECKOUT_LINKS.whatsapp}>
+            <Button variant="secondary" href={WHATSAPP_LINK}>
               Falar com Consultor
             </Button>
           </motion.div>
@@ -443,7 +469,7 @@ const Pricing = () => {
                 </li>
               ))}
             </ul>
-            <Button variant="outline" className="w-full justify-center border-green-500 text-green-400 hover:bg-green-500/10" href={CHECKOUT_LINKS.whatsapp}>
+            <Button variant="outline" className="w-full justify-center border-green-500 text-green-400 hover:bg-green-500/10" href={WHATSAPP_LINK}>
               Começar Teste Grátis
             </Button>
           </Card>
@@ -471,7 +497,7 @@ const Pricing = () => {
                 </li>
               ))}
             </ul>
-            <Button variant="secondary" className="w-full justify-center" href={CHECKOUT_LINKS.basic}>Assinar Gestão</Button>
+            <Button variant="secondary" className="w-full justify-center" onClick={() => createCheckoutSession('gestao')}>Assinar Gestão</Button>
           </Card>
 
           {/* Plano Full */}
@@ -509,7 +535,7 @@ const Pricing = () => {
                 </li>
               ))}
             </ul>
-            <Button variant="primary" className="w-full justify-center" href={CHECKOUT_LINKS.pro}>Quero o Plano Full</Button>
+            <Button variant="primary" className="w-full justify-center" onClick={() => createCheckoutSession('full')}>Quero o Plano Full</Button>
             <p className="text-center text-xs text-gray-500 mt-4">7 dias de garantia incondicional</p>
           </Card>
         </div>
