@@ -1,8 +1,6 @@
 // Vercel Serverless Function para criar Stripe Checkout Session
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 export default async function handler(req, res) {
   // Permite CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -20,6 +18,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Verificar variáveis de ambiente
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY não configurada');
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const { planType } = req.body;
 
     // Configuração dos planos
@@ -42,6 +46,12 @@ export default async function handler(req, res) {
 
     const plan = plans[planType];
 
+    // URLs
+    const successUrl = process.env.SUCCESS_URL || 'https://painel-de-controle-barbearia.web.app';
+    const cancelUrl = process.env.CANCEL_URL || 'https://landing-page-barber-black.vercel.app#pricing';
+
+    console.log('Creating session with:', { successUrl, cancelUrl, planType });
+
     // Criar Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -56,15 +66,17 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CANCEL_URL || req.headers.origin}#pricing`,
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
       locale: 'pt-BR',
-      customer_email: req.body.email || undefined,
     });
 
     return res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Erro ao criar checkout:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Erro ao criar checkout:', error.message);
+    return res.status(500).json({ 
+      error: error.message,
+      type: error.type || 'unknown'
+    });
   }
 }
