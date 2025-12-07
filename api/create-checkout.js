@@ -1,5 +1,7 @@
-// Vercel Serverless Function para criar Stripe Checkout Session com parcelamento
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// Vercel Serverless Function para criar Stripe Checkout Session
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   // Permite CORS
@@ -40,7 +42,7 @@ export default async function handler(req, res) {
 
     const plan = plans[planType];
 
-    // Criar Checkout Session com parcelamento
+    // Criar Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -54,15 +56,8 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      payment_method_options: {
-        card: {
-          installments: {
-            enabled: true,
-          },
-        },
-      },
-      success_url: `${process.env.SUCCESS_URL || 'https://painel-de-controle-barbearia.web.app'}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin || 'https://your-landing-page.vercel.app'}#pricing`,
+      success_url: `${process.env.SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CANCEL_URL || req.headers.origin}#pricing`,
       locale: 'pt-BR',
       customer_email: req.body.email || undefined,
     });
