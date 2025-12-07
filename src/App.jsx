@@ -176,7 +176,7 @@ const Hero = () => {
                 </div>
               ))}
             </div>
-            <p>Usado por +500 barbearias</p>
+            <p>Crescendo junto com o seu negócio</p>
           </div>
         </div>
 
@@ -576,7 +576,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-white/5 text-center text-gray-600 text-xs">
-      © 2024 BozzCut Tecnologia. Todos os direitos reservados.
+      © 2025 BozzCut Tecnologia. Todos os direitos reservados.
     </div>
   </footer>
 );
